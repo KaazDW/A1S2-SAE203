@@ -1,4 +1,8 @@
+//Grove ultrasonic Ranger
+
 #include "FeatherShieldPinouts.h"
+
+#include "Ultrasonic.h"
 #include <Adafruit_MotorShield.h>
 #include <Wire.h>
 #include "Adafruit_PWMServoDriver.h"
@@ -11,6 +15,7 @@
 #define NUMPIXELS 10
 
 Adafruit_NeoPixel pixels(NUMPIXELS, A0, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels2(NUMPIXELS, D4, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 500
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
@@ -21,8 +26,10 @@ Adafruit_DCMotor *RoueGauche = AFMS.getMotor(3);
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-int speedBase = 100;
-int speedBase2 = 95;
+Ultrasonic ultrasonic(D2);
+
+int speedBase;
+int speedBase2;
 
 String avancer = "avancer";
 String reculer = "reculer";
@@ -122,10 +129,9 @@ BluetoothSerial SerialBT;
 void setup() {
   AFMS.begin();
   pinMode(A2, INPUT);
+  pinMode(D4, INPUT);
   pinMode(A0, OUTPUT);
   Serial.begin(115200);
-  RoueDroite->setSpeed(speedBase); 
-  RoueGauche->setSpeed(speedBase2); 
   SerialBT.begin("Toretto"); //Bluetooth device name
   Serial.println("The device started on  Bluetooth !");
   pixels.begin();
@@ -134,8 +140,10 @@ void setup() {
 String message = " ";
 
 void loop() {
+
+  speedBase2 = (analogRead(A2)*255)/4095;
+  speedBase = (analogRead(A2)*255)/4095;
   
- 
   if (SerialBT.available()) {
     char temp;
     temp = SerialBT.read();
@@ -149,5 +157,33 @@ void loop() {
   }
   pixels.show();
   checking(message);
+  
+  long RangeInCentimeters;
+  RangeInCentimeters = ultrasonic.MeasureInCentimeters();
+
   delay(10);
+  
+  if (RangeInCentimeters > 10 && avancer2 == true && RangeInCentimeters != 533) {
+
+      avancer2 = false;
+      reculer2 = false;
+      RoueDroite->run(FORWARD);
+      RoueGauche->run(BACKWARD);  
+      
+      for (int i = 0; i < NUMPIXELS; i++)
+        pixels2.setPixelColor(i, pixels.Color(10,0,0));  
+      pixels2.show();
+      
+      delay(1000);
+      RoueDroite->run(RELEASE);
+      RoueGauche->run(RELEASE);     
+      pixels.clear();
+      pixels.show();
+    }
+    else {
+      pixels2.clear();
+      pixels2.show();
+    }
+   
+  
 }
