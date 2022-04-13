@@ -1,5 +1,3 @@
-//Grove ultrasonic Ranger
-
 #include "FeatherShieldPinouts.h"
 
 #include "Ultrasonic.h"
@@ -15,18 +13,18 @@
 #define NUMPIXELS 10
 
 Adafruit_NeoPixel pixels(NUMPIXELS, A0, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel pixels2(NUMPIXELS, D4, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels2(NUMPIXELS, D2, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 500
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
-Adafruit_DCMotor *RoueDroite = AFMS.getMotor(1);
-Adafruit_DCMotor *RoueGauche = AFMS.getMotor(3);
+Adafruit_DCMotor *RoueGauche = AFMS.getMotor(1);
+Adafruit_DCMotor *RoueDroite = AFMS.getMotor(3);
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-Ultrasonic ultrasonic(D2);
+Ultrasonic ultrasonic(D4);
 
 int speedBase;
 int speedBase2;
@@ -72,6 +70,25 @@ void checking(String& message) {
       message = " ";
     }
     else if (message == droite) {
+      pixels.setPixelColor(9, pixels.Color(15,2,0));
+      pixels.setPixelColor(8, pixels.Color(15,2,0));
+
+      if (avancer2 == true) {
+        pixels.setPixelColor(1, pixels.Color(0,10,0));
+        pixels.setPixelColor(0, pixels.Color(0,10,0));  
+      }
+      else if (reculer2 == true) {
+        pixels.setPixelColor(1, pixels.Color(10,0,0));
+        pixels.setPixelColor(0, pixels.Color(10,0,0));  
+      }
+      
+      pixels.show();
+      
+      RoueDroite->setSpeed(40); 
+      RoueGauche->setSpeed(120);  
+      message = " ";
+    }
+    else if (message == gauche) {
       pixels.setPixelColor(1, pixels.Color(15,2,0));
       pixels.setPixelColor(0, pixels.Color(15,2,0));
 
@@ -82,25 +99,6 @@ void checking(String& message) {
       else if (reculer2 == true) {
         pixels.setPixelColor(8, pixels.Color(10,0,0));
         pixels.setPixelColor(9, pixels.Color(10,0,0));  
-      }
-      
-      pixels.show();
-      
-      RoueDroite->setSpeed(40); 
-      RoueGauche->setSpeed(120);  
-      message = " ";
-    }
-    else if (message == gauche) {
-      pixels.setPixelColor(8, pixels.Color(15,2,0));
-      pixels.setPixelColor(9, pixels.Color(15,2,0));
-
-      if (avancer2 == true) {
-        pixels.setPixelColor(0, pixels.Color(0,10,0));
-        pixels.setPixelColor(1, pixels.Color(0,10,0));  
-      }
-      else if (reculer2 == true) {
-        pixels.setPixelColor(0, pixels.Color(10,0,0));
-        pixels.setPixelColor(1, pixels.Color(10,0,0));  
       }
             
       pixels.show();
@@ -141,8 +139,8 @@ String message = " ";
 
 void loop() {
 
-  speedBase2 = (analogRead(A2)*255)/4095;
-  speedBase = (analogRead(A2)*255)/4095;
+  speedBase2 = ((analogRead(A2)*255)/4095);
+  speedBase = ((analogRead(A2)*255)/4095)-3;
   
   if (SerialBT.available()) {
     char temp;
