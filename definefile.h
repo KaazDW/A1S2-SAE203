@@ -14,3 +14,5 @@
 #define SDA 22
 #define SCL 23
 #define SDA 23
+
+#define NUMPIXELS 10
