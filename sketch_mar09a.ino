@@ -8,7 +8,7 @@
 #include <string.h>
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
- #include <avr/power.h>
+#include <avr/power.h>
 #endif
 #define NUMPIXELS 10
 
@@ -183,5 +183,4 @@ void loop() {
       pixels2.show();
     }
    
-  
 }
